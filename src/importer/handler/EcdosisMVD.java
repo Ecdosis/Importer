@@ -16,7 +16,7 @@
  *  (c) copyright Desmond Schmidt 2015
  */
 
-package compare.handler;
+package importer.handler;
 import edu.luc.nmerge.mvd.MVD;
 import edu.luc.nmerge.mvd.MVDFile;
 import calliope.core.constants.JSONKeys;

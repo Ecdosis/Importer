@@ -18,7 +18,7 @@ import importer.handler.ImporterHandler;
 import calliope.core.exception.DbException;
 import importer.exception.PathException;
 import calliope.core.Utils;
-import importer.constants.Services;
+import importer.constants.Service;
 import javax.servlet.http.HttpServletResponse;
 import importer.tests.Test;
 import calliope.core.database.Connector;
@@ -368,7 +368,7 @@ public class ImporterPostHandler extends ImporterHandler
         String prefix = Utils.first( urn );
         if ( prefix != null )
         {
-            if ( prefix.equals(Services.TESTS) )
+            if ( prefix.equals(Service.TESTS) )
             {
                 try
                 {
@@ -387,7 +387,7 @@ public class ImporterPostHandler extends ImporterHandler
                     throw new ImporterException( e );
                 }
             }
-            else if ( prefix.equals(Services.IMPORT) )
+            else if ( prefix.equals(Service.IMPORT) )
             {
                 String second = Utils.second( urn );
                 if ( second.length() > 0 )
@@ -397,15 +397,15 @@ public class ImporterPostHandler extends ImporterHandler
                         urn = urn.substring(pos+second.length()+1);
                     else 
                         urn = "";
-                    if ( second.equals(Services.LITERAL) )
+                    if ( second.equals(Service.LITERAL) )
                         new UploadHandler().handle(request,response,urn);
-                    else if ( second.equals(Services.XML) )
+                    else if ( second.equals(Service.XML) )
                         new XMLImportHandler().handle(request,response,urn);
-                    else if ( second.equals(Services.HTML) )
+                    else if ( second.equals(Service.HTML) )
                         new HTMLImportHandler().handle(request,response,urn);
-                    else if ( second.equals(Services.TEXT) )
+                    else if ( second.equals(Service.TEXT) )
                         new TextImportHandler().handle(request,response,urn);
-                    else if ( second.equals(Services.MIXED) )
+                    else if ( second.equals(Service.MIXED) )
                         new MixedImportHandler().handle(request,response,urn);
                     else
                         throw new ImporterException("Unknown service "+second);
@@ -413,7 +413,7 @@ public class ImporterPostHandler extends ImporterHandler
                 else
                     new MixedImportHandler().handle(request,response,urn);
             }
-            else if ( prefix.equals(Services.UPLOAD) )
+            else if ( prefix.equals(Service.UPLOAD) )
                 new UploadHandler().handle(request,response,Utils.pop(urn));
         }
         else

@@ -27,4 +27,16 @@ public class Service {
     public static final String VERSION2 = "version2";
     public static final String VERSION1 = "version1";
     public static final String TITLE = "title";
+    public static final String LITERAL = "literal";
+    public static final String TEST = "test";
+    public static final String JSON = "json";
+    public static final String MIXED = "mixed";
+    public static final String XML = "xml";
+    public static final String HTML = "html";
+    public static final String TEXT = "text";
+    public static final String COLLECTION = "collection";
+    public static final String UPLOAD = "upload";
+    public static final String IMPORT = "import";
+    public static final String TESTS = "tests";
+    public static final String DICTS = "dicts";
 }

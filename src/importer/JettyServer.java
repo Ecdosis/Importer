@@ -97,7 +97,9 @@ public class JettyServer extends AbstractHandler
         boolean sane = true;
         try
         {
-            wsPort = 8087;
+            // should be unique for this service in Jetty
+            // but in Tomcat 8080 is used for all webapps
+            wsPort = 8088;
             host = "localhost";
             Repository repository = Repository.MONGO;
             for ( int i=0;i<args.length;i++ )
