@@ -87,6 +87,14 @@ public class Archive extends HashMap<String,char[]>
         return this.encoding;
     }
     /**
+     * Only works after resource has been written
+     * @return the default version
+     */
+    public String getVersion1()
+    {
+        return this.version1;
+    }
+    /**
      * Add a long name to our map for later use
      * @param key the groups+version short name key
      * @param longName its long name
@@ -201,6 +209,7 @@ public class Archive extends HashMap<String,char[]>
                         groups, Version.NO_BACKUP, false );
                     // tepmorary hack
                     mvd.setDirectAlign( true );
+                    System.out.println("vid="+vId+" shortKey="+shortKey);
                     mvd.update( vId, data, true );
                 }
                 long diff = System.currentTimeMillis()-startTime;
@@ -223,7 +232,7 @@ public class Archive extends HashMap<String,char[]>
             doc.put( JSONKeys.STYLE, style );
             doc.put( JSONKeys.FORMAT, format );
             doc.put( JSONKeys.BODY, body );
-            externalise(mvdName);
+            //externalise(mvdName);
             return doc.toString();
         }
         catch ( Exception e )

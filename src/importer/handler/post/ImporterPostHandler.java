@@ -20,7 +20,6 @@ import importer.exception.PathException;
 import calliope.core.Utils;
 import importer.constants.Service;
 import javax.servlet.http.HttpServletResponse;
-import importer.tests.Test;
 import calliope.core.database.Connector;
 import calliope.core.constants.*;
 import calliope.exception.AeseException;
@@ -44,6 +43,8 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 /**
  * Handle a POST request
@@ -88,6 +89,46 @@ public class ImporterPostHandler extends ImporterHandler
         log = new StringBuilder();
         similarityTest = false;
         title = "untitled";
+    }
+    protected void addMetadata( String version1 )
+    {
+        try
+        {
+            JSONObject docMetadata = new JSONObject();
+            JSONObject projectMetadata = null;
+            docMetadata.put(JSONKeys.DOCID, docid );
+            docMetadata.put(JSONKeys.ENCODING, encoding );
+            String section = getSection();
+            if ( section.length()>0 )
+                docMetadata.put(JSONKeys.SECTION, section );
+            String subSection = getSubsection();
+            if ( subSection.length()>0 )
+                docMetadata.put(JSONKeys.SUBSECTION, subSection );
+            docMetadata.put(JSONKeys.VERSION1, version1 );
+            docMetadata.put(JSONKeys.VERSION1, version1 );
+            // add title 
+            String project = Connector.getConnection().getFromDb(Database.METADATA,docid);
+            if ( project != null )
+            {
+                projectMetadata = (JSONObject)JSONValue.parse(project);
+                docMetadata.put(JSONKeys.AUTHOR, projectMetadata.get(JSONKeys.AUTHOR));
+            }
+            else
+            {
+                docMetadata.put( JSONKeys.AUTHOR, getAuthor() );
+            }
+            if ( title.length()>0 && !title.equals("untitled") )
+                docMetadata.put(JSONKeys.TITLE, title );
+            else if ( projectMetadata != null && projectMetadata.get(JSONKeys.WORK) != null )
+                docMetadata.put(JSONKeys.TITLE,projectMetadata.get(JSONKeys.WORK));
+            else
+                docMetadata.put(JSONKeys.TITLE, title );
+            Connector.getConnection().putToDb( Database.METADATA, docid, 
+                docMetadata.toJSONString() );
+        }
+        catch ( Exception e )
+        {
+        }
     }
     /**
      * Add a batch of annotations to the database
@@ -366,55 +407,27 @@ public class ImporterPostHandler extends ImporterHandler
         HttpServletResponse response, String urn ) throws ImporterException
     {
         String prefix = Utils.first( urn );
-        if ( prefix != null )
+        if ( prefix != null && prefix.length() > 0 )
         {
-            if ( prefix.equals(Service.TESTS) )
-            {
-                try
-                {
-                    String second = Utils.second( urn );
-                    if ( second == null || second.length()==0 )
-                        second = "Home";
-                    second = Character.toUpperCase(second.charAt(0))
-                        +second.substring(1);
-                    String className = "calliope.tests.Test"+second;
-                    Class tClass = Class.forName( className );
-                    Test t = (Test)tClass.newInstance();
-                    t.handle( request, response, urn );
-                }
-                catch ( Exception e )
-                {
-                    throw new ImporterException( e );
-                }
-            }
-            else if ( prefix.equals(Service.IMPORT) )
-            {
-                String second = Utils.second( urn );
-                if ( second.length() > 0 )
-                {
-                    int pos = urn.indexOf(second);
-                    if ( urn.length() > pos+second.length() )
-                        urn = urn.substring(pos+second.length()+1);
-                    else 
-                        urn = "";
-                    if ( second.equals(Service.LITERAL) )
-                        new UploadHandler().handle(request,response,urn);
-                    else if ( second.equals(Service.XML) )
-                        new XMLImportHandler().handle(request,response,urn);
-                    else if ( second.equals(Service.HTML) )
-                        new HTMLImportHandler().handle(request,response,urn);
-                    else if ( second.equals(Service.TEXT) )
-                        new TextImportHandler().handle(request,response,urn);
-                    else if ( second.equals(Service.MIXED) )
-                        new MixedImportHandler().handle(request,response,urn);
-                    else
-                        throw new ImporterException("Unknown service "+second);
-                }
-                else
-                    new MixedImportHandler().handle(request,response,urn);
-            }
+            int pos = urn.indexOf(prefix);
+            if ( urn.length() > pos+prefix.length() )
+                urn = urn.substring(pos+prefix.length()+1);
+            else 
+                urn = "";
+            if ( prefix.equals(Service.LITERAL) )
+                new UploadHandler().handle(request,response,urn);
+            else if ( prefix.equals(Service.XML) )
+                new XMLImportHandler().handle(request,response,urn);
+            else if ( prefix.equals(Service.HTML) )
+                new HTMLImportHandler().handle(request,response,urn);
+            else if ( prefix.equals(Service.TEXT) )
+                new TextImportHandler().handle(request,response,urn);
+            else if ( prefix.equals(Service.MIXED) )
+                new MixedImportHandler().handle(request,response,urn);
             else if ( prefix.equals(Service.UPLOAD) )
                 new UploadHandler().handle(request,response,Utils.pop(urn));
+            else
+                throw new ImporterException("Unknown service "+prefix);
         }
         else
             throw new PathException("Invalid urn "+urn );

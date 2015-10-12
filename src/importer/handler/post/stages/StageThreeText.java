@@ -45,7 +45,7 @@ public class StageThreeText extends Stage
                 char first = filterName.charAt(0);
                 first = Character.toUpperCase(first);
                 filterName = first + filterName.substring( 1 );
-                Class c = Class.forName("calliope.importer.filters."
+                Class c = Class.forName("importer.filters."
                     +filterName+"Filter");
                 filter = (Filter)c.newInstance();
                 if ( filter != null )

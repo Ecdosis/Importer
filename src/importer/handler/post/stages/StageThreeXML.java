@@ -253,12 +253,12 @@ public class StageThreeXML extends Stage
             catch ( Exception e )
             {
                 className = popClassName(className);
-                e.printStackTrace(System.out);
+                System.out.println("no filter for "+className+" popping...");
             }
         }
         if ( f != null )
         {
-            System.out.println("Applying filter to "+pair.vid );
+            System.out.println("Applying filter "+className+" to "+pair.vid );
             // woo hoo! we have a filter baby!
             try
             {

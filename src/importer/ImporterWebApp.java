@@ -26,6 +26,7 @@ import calliope.core.exception.CalliopeException;
 import calliope.core.exception.CalliopeExceptionMessage;
 import java.util.Enumeration;
 import importer.handler.*;
+import importer.handler.post.ImporterPostHandler;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -119,6 +120,8 @@ public class ImporterWebApp extends HttpServlet
             ImporterHandler handler;
             if ( method.equals("GET") )
                 handler = new ImporterGetHandler();
+            else if ( method.equals("POST") )
+                handler = new ImporterPostHandler();
             else
                 throw new ImporterException("Unknown http method "+method);
             resp.setStatus(HttpServletResponse.SC_OK);

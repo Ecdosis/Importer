@@ -7,13 +7,13 @@
   metadata-complete="true">
 
     <description>
-     Compare services Web App.
+     Import services Web App.
     </description>
-    <display-name>Comparison services for Digital Scholarly Editions</display-name>
+    <display-name>Import services for Digital Scholarly Editions</display-name>
 
     <servlet>
-      <servlet-name>CompareWebApp</servlet-name>
-      <servlet-class>compare.CompareWebApp</servlet-class>
+      <servlet-name>ImporterWebApp</servlet-name>
+      <servlet-class>importer.ImporterWebApp</servlet-class>
     </servlet>
 
     <context-param>
@@ -42,7 +42,7 @@
     </context-param>
 
     <servlet-mapping>
-        <servlet-name>CompareWebApp</servlet-name>
+        <servlet-name>ImporterWebApp</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
 

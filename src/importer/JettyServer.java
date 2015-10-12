@@ -21,7 +21,7 @@ package importer;
 import importer.exception.ImporterException;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import importer.handler.get.ImporterGetHandler;
-import importer.handler.*;
+import importer.handler.post.ImporterPostHandler;
 import org.eclipse.jetty.server.Request;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -66,11 +66,13 @@ public class JettyServer extends AbstractHandler
         try
         {
             String service = Utils.first(target);
-            if ( service.equals(Service.COMPARE) )
+            if ( service.equals(Service.IMPORTER) )
             {
                 String urn = Utils.pop(target);
                 if ( method.equals("GET") )
                     new ImporterGetHandler().handle( request, response, urn );
+                else if ( method.equals("POST") )
+                    new ImporterPostHandler().handle( request, response, urn );
                 else
                     throw new ImporterException("Unknown http method "+method);
             }

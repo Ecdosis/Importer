@@ -39,4 +39,5 @@ public class Service {
     public static final String IMPORT = "import";
     public static final String TESTS = "tests";
     public static final String DICTS = "dicts";
+    public static final String IMPORTER = "importer";
 }

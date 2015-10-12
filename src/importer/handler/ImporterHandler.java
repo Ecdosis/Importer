@@ -63,6 +63,32 @@ abstract public class ImporterHandler
         else
             return "";
     }
+    protected String getSection()
+    {
+        if ( docid != null )
+        {
+            String[] parts = docid.split("/");
+            if ( parts.length > 3 )
+                return parts[3];
+            else
+                return "";
+        }
+        else
+            return "";
+    }
+    protected String getSubsection()
+    {
+        if ( docid != null )
+        {
+            String[] parts = docid.split("/");
+            if ( parts.length > 4 )
+                return parts[4];
+            else
+                return "";
+        }
+        else
+            return "";
+    }
     public String guessEncoding(byte[] bytes) 
     {
         org.mozilla.universalchardet.UniversalDetector detector =

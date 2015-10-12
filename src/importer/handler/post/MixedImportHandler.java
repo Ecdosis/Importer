@@ -122,6 +122,7 @@ public class MixedImportHandler extends ImporterPostHandler
                             //cortex.externalise();
                             addToDBase( cortex, "cortex", suffix );
                             addToDBase( corcode, "corcode", suffix );
+                            addMetadata( cortex.getVersion1() ); 
                         }
                         catch ( Exception e )
                         {
