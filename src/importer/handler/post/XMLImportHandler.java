@@ -51,6 +51,7 @@ public class XMLImportHandler extends ImporterPostHandler
                 Archive corcode = new Archive(title, 
                     getAuthor(),Formats.MVD_STIL,encoding);
                 cortex.setStyle( style );
+                cortex.setVersionInfo(trimDocid(docid,3));
                 corcode.setStyle( style );
                 StageOne stage1 = new StageOne( files );
                 log.append( stage1.process(cortex,corcode) );
@@ -76,6 +77,7 @@ public class XMLImportHandler extends ImporterPostHandler
                         addAnnotations( notes, true );
                     addToDBase( cortex, "cortex", suffix );
                     addToDBase( corcode, "corcode", suffix );
+                    addMetadata( cortex.getVersion1() ); 
                     // now get the json docs and add them at the right docid
 //                    Connector.getConnection().putToDb( Database.CORTEX, 
 //                        docID.get(), cortex.toMVD("cortex") );

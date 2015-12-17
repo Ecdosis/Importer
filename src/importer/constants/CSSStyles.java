@@ -26,4 +26,6 @@ public class CSSStyles
 {
     public static final String WEAK = "weak";
     public static final String STRONG = "strong";
+    public static final String HYPHEN_CR = "hyphen-cr";
+    public static final String PARA_START = "para-start";
 }

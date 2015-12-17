@@ -102,7 +102,9 @@ public abstract class Filter
     public boolean isHardHyphen( String last, String next )
     {
         String compound = last+next;
-        if ( speller.hasWord(last,dict)
+        if ( last.equals("--") )
+            return true;
+        else if ( speller.hasWord(last,dict)
             &&speller.hasWord(next,dict)
             &&(!speller.hasWord(compound,dict)
                 ||compounds.contains(compound)))
@@ -167,7 +169,12 @@ public abstract class Filter
             int start = 0;
             int size=0,i=len-1;
             // point beyond trailing hyphen
-            if ( text.charAt(len-1) == '-' )
+            if ( len>1 && text.endsWith("--") )
+            {
+                lastEndsInHyphen = true;
+                return "--";
+            }
+            else if ( text.charAt(len-1) == '-' )
             {
                 lastEndsInHyphen = true;
                 len--;
@@ -201,7 +208,7 @@ public abstract class Filter
             return "";
     }
     /**
-     * Reinitiase for a new conversion
+     * Reinitialise for a new conversion
      */
     protected void init()
     {

@@ -17,6 +17,7 @@
  */
 
 package importer;
+import calliope.core.constants.Database;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.HashMap;
@@ -24,10 +25,14 @@ import java.util.Iterator;
 import java.util.Set;
 import calliope.core.constants.JSONKeys;
 import calliope.core.constants.Formats;
+import calliope.core.database.Connector;
 import calliope.exception.AeseException;
+import importer.exception.ImporterException;
 import edu.luc.nmerge.mvd.MVD;
 import edu.luc.nmerge.mvd.Version;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.JSONArray;
 
 /**
  * A set of CorCode or CorTex files, each a version of the same work, 
@@ -75,11 +80,6 @@ public class Archive extends HashMap<String,char[]>
         this.format = format;
         this.encoding = (encoding==null)?"UTF-8":encoding;
         StringBuilder sb = new StringBuilder(title);
-//        sb.append( " by ");
-//        if ( author.length()>0 )
-//            sb.append( Character.toUpperCase(author.charAt(0)) );
-//        if ( author.length()>1 )
-//            sb.append( author.substring(1) );
         description = sb.toString();
     }
     public String getEncoding()
@@ -102,6 +102,51 @@ public class Archive extends HashMap<String,char[]>
     public void addLongName( String key, String longName )
     {
         nameMap.put( key, longName );
+    }
+    /**
+     * Using the project version info set long names for each short name
+     * @param docid the project docid
+     * @throws ImporterException 
+     */
+    public void setVersionInfo( String docid ) throws ImporterException
+    {
+        try
+        {
+            String project = Connector.getConnection().getFromDb(
+                Database.PROJECTS,docid);
+            if ( project == null )
+            {
+                String[] parts = docid.split("/");
+                if ( parts.length==3 )
+                    docid = parts[0]+"/"+parts[1];
+                else
+                    throw new Exception("Couldn't find project "+docid);
+                project = Connector.getConnection().getFromDb(
+                    Database.PROJECTS,docid);
+                if ( project==null )
+                    throw new Exception("Couldn't find project "+docid);
+            }
+            JSONObject jObj = (JSONObject)JSONValue.parse( project );
+            if ( jObj.containsKey(JSONKeys.VERSIONS) )
+            {
+                JSONArray versions = (JSONArray) jObj.get(JSONKeys.VERSIONS);
+                for ( int i=0;i<versions.size();i++ )
+                {
+                    JSONObject version = (JSONObject)versions.get(i);
+                    Set<String> keys = version.keySet();
+                    Iterator<String> iter = keys.iterator();
+                    while ( iter.hasNext() )
+                    {
+                        String key = iter.next();
+                        nameMap.put( key, (String)version.get(key) );
+                    }
+                }
+            }
+        }
+        catch ( Exception e )
+        {
+            throw new ImporterException(e);
+        }
     }
     public void setStyle( String style )
     {
@@ -156,6 +201,21 @@ public class Archive extends HashMap<String,char[]>
             return key;
     }
     /**
+     * Try various ways to get the long name for the siglum
+     * @param shortKey the version siglim
+     * @return the long name of the version
+     */
+    String getLongName( String shortKey )
+    {
+        String longName = translateKey(shortKey);
+        if ( !longName.equals(shortKey) )
+            return longName;
+        else if ( nameMap.containsKey(shortKey) )
+            return nameMap.get(shortKey);
+        else
+            return "Version "+shortKey;
+    }
+    /**
      * Convert this archive to a resource, wrapped in JSON for storage
      * @param mvdName name of the MVD
      * @return a string representation of the MVD as a JSON document
@@ -203,9 +263,8 @@ public class Archive extends HashMap<String,char[]>
                             version1 = "/"+groups+version1;
                     }
                     char[] data = get( key );
-                    String longName = (groups.length()>0)?translateKey(shortKey)+" of "
-                        +groups:shortKey;
-                    vId = (short)mvd.newVersion( shortKey, "Version "+longName, 
+                    vId = (short)mvd.newVersion( shortKey, 
+                        getLongName(shortKey), 
                         groups, Version.NO_BACKUP, false );
                     // tepmorary hack
                     mvd.setDirectAlign( true );

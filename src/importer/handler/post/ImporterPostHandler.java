@@ -90,7 +90,29 @@ public class ImporterPostHandler extends ImporterHandler
         similarityTest = false;
         title = "untitled";
     }
-    protected void addMetadata( String version1 )
+    /**
+     * Reduce the docid to its first two or three components
+     * @param docid the raw docid
+     * @param numParts number of components starting from the left
+     * @return the reduced docid suitable for a project
+     */
+    protected String trimDocid( String docid, int numParts )
+    {
+        StringBuilder sb = new StringBuilder();
+        String[] parts = docid.split("/");
+        for ( int i=0;i<numParts;i++ )
+        {
+            if ( sb.length()>0 )
+                sb.append("/");
+            sb.append(parts[i]);
+        }
+        return sb.toString();
+    }
+    /**
+     * Add metadata automatically
+     * @param version1 the default version of the MVD
+     */
+    protected void addMetadata( String version1 ) throws ImporterException
     {
         try
         {
@@ -105,22 +127,25 @@ public class ImporterPostHandler extends ImporterHandler
             if ( subSection.length()>0 )
                 docMetadata.put(JSONKeys.SUBSECTION, subSection );
             docMetadata.put(JSONKeys.VERSION1, version1 );
-            docMetadata.put(JSONKeys.VERSION1, version1 );
             // add title 
-            String project = Connector.getConnection().getFromDb(Database.METADATA,docid);
+            String project = Connector.getConnection().getFromDb(
+                Database.PROJECTS,trimDocid(docid,3));
+            if ( project == null )
+                project = Connector.getConnection().getFromDb(
+                    Database.PROJECTS,trimDocid(docid,2));
             if ( project != null )
             {
                 projectMetadata = (JSONObject)JSONValue.parse(project);
-                docMetadata.put(JSONKeys.AUTHOR, projectMetadata.get(JSONKeys.AUTHOR));
+                docMetadata.put(JSONKeys.AUTHOR, 
+                    projectMetadata.get(JSONKeys.AUTHOR));
             }
             else
-            {
                 docMetadata.put( JSONKeys.AUTHOR, getAuthor() );
-            }
-            if ( title.length()>0 && !title.equals("untitled") )
-                docMetadata.put(JSONKeys.TITLE, title );
-            else if ( projectMetadata != null && projectMetadata.get(JSONKeys.WORK) != null )
-                docMetadata.put(JSONKeys.TITLE,projectMetadata.get(JSONKeys.WORK));
+            if ( projectMetadata != null 
+                && projectMetadata.get(JSONKeys.WORK) != null 
+                && title.equals("untitled") )
+                docMetadata.put(JSONKeys.TITLE,
+                    projectMetadata.get(JSONKeys.WORK));
             else
                 docMetadata.put(JSONKeys.TITLE, title );
             Connector.getConnection().putToDb( Database.METADATA, docid, 
@@ -128,6 +153,7 @@ public class ImporterPostHandler extends ImporterHandler
         }
         catch ( Exception e )
         {
+            throw new ImporterException(e);
         }
     }
     /**

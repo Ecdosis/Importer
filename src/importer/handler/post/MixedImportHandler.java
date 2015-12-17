@@ -15,15 +15,12 @@
  */
 
 package importer.handler.post;
-import calliope.core.constants.Formats;
 import importer.Archive;
-import importer.handler.post.importer.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import importer.exception.ImporterException;
 import importer.constants.Config;
 import calliope.core.constants.Formats;
-import importer.handler.post.ImporterPostHandler;
 import importer.handler.post.annotate.Annotation;
 import importer.handler.post.stages.StageOne;
 import importer.handler.post.stages.StageTwo;
@@ -77,6 +74,7 @@ public class MixedImportHandler extends ImporterPostHandler
                     Archive cortex = new Archive(getWork(), 
                         getAuthor(), Formats.MVD_TEXT, encoding);
                     cortex.setStyle( style );
+                    cortex.setVersionInfo(trimDocid(docid,3));
                     Archive corcode = new Archive(getWork(), 
                         getAuthor(),Formats.MVD_STIL,encoding);
                     corcode.setStyle( style );

@@ -24,6 +24,9 @@ import importer.Archive;
 import calliope.core.json.corcode.Range;
 import java.io.IOException;
 import java.io.CharArrayWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -237,6 +240,7 @@ public class CceFilter extends Filter
             String firstWord = "";
             String lineEnd = findLineEnding( input );
             String[] lines = input.split(lineEnd);
+            paraSeen = true;
             for ( int i=0;i<lines.length;i++ ) 
             {
                 String str = lines[i].trim();
@@ -253,31 +257,41 @@ public class CceFilter extends Filter
                 }
                 else if ( lines[i].startsWith("   ") )
                 {
+                    Range r;
                     if ( !paraSeen )
                         paraSeen = true;
                     else if ( written>paraStart )
                     {
                         // write previous para range
-                        Range r = new Range("p",paraStart,written-paraStart);
+                        r = new Range("p",paraStart,written-paraStart);
                         markup.add( r );
                     }
+                    if ( written > 0 )
+                        writeCurrent( txt, CR );
                     paraStart = written;
-                    writeLineContents( str, txt );
+                    // markup new paragraphs with 4 spaces for readability
+                    r = new Range(CSSStyles.PARA_START,written,4);
+                    markup.add(r);
+                    writeLineContents( "    "+str, txt );
                 }
                 else
                 {
                     if ( lastEndsInHyphen )
                     {
+                        Range r;
                         if ( isHardHyphen(lastWord,firstWord) )
                         {
-                            Range r = new Range( CSSStyles.STRONG, written-1, 1 );
+                            r = new Range( CSSStyles.STRONG, written-1, 1 );
                             markup.add( r );
                         }
                         else
                         {
-                            Range r = new Range( CSSStyles.WEAK, written-1, 1 );
+                            r = new Range( CSSStyles.WEAK, written-1, 1 );
                             markup.add( r );
                         }
+                        writeCurrent( txt, CR );
+                        r = new Range( CSSStyles.HYPHEN_CR, written-1, 1 );
+                        markup.add( r );
                     }
                     else if ( written > 0 )
                     {
@@ -299,6 +313,12 @@ public class CceFilter extends Filter
                     paraStart = written;
                 }
                 lastWord = getLastWord( str );
+            }
+            // write closing para range
+            if ( written > paraStart )
+            {
+                Range r = new Range("p",paraStart,written-paraStart);
+                markup.add( r );
             }
             markup.sort();
             char[] chars = txt.toCharArray();
@@ -366,6 +386,7 @@ public class CceFilter extends Filter
     {
         if ( pending != null )
         {
+            pending = pending.replace("--","—");
             writeCurrent( txt, pending.toCharArray() );
             pending = null;
         }
@@ -450,6 +471,52 @@ public class CceFilter extends Filter
         {
             this.loc = loc;
             this.name = name;
+        }
+    }
+    static String readFile( String name )
+    {
+        try
+        {
+            File f = new File(name);
+            FileInputStream fis = new FileInputStream(f);
+            byte[] data = new byte[(int)f.length()];
+            fis.read( data );
+            return new String(data,"UTF-8");
+        }
+        catch ( Exception e )
+        {
+            return "";
+        }
+    }
+    static void writeFile( String data, String name )
+    {
+        try
+        {
+            File f = new File(name);
+            FileOutputStream fos = new FileOutputStream(f);
+            fos.write( data.getBytes("UTF-8") );
+            fos.close();
+        }
+        catch ( Exception e )
+        {
+           System.out.println(e.getMessage());
+        }
+    }
+    public static void main(String[] args )
+    {
+        String input = readFile( args[0] );
+        Archive cortex = new Archive("Nostromo", "Joseph Conrad", "TEI/default", "UTF-8");
+        Archive corcode = new Archive("Nostromo", "Joseph Conrad", "TEI/default", "UTF-8");
+        try
+        {
+            String log = new CceFilter().convert( input, "A1", cortex, corcode );
+            System.out.println(log);
+            writeFile( new String(cortex.get("A1")),"cortex.txt");
+            writeFile( new String(corcode.get("A1")),"corcode.txt");
+        }
+        catch ( Exception e )
+        {
+            System.out.println( e.getMessage() );
         }
     }
 }
