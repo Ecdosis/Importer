@@ -184,7 +184,7 @@ public class StageThreeXML extends Stage
         index = stripped.indexOf("#");
         if ( index != -1 )
             stripped = stripped.substring(index+1);
-        index = stripped.indexOf("-");
+        index = stripped.lastIndexOf("-");
         if ( index != -1 )
             stripped = stripped.substring(index+1);
         return stripped;
@@ -252,8 +252,10 @@ public class StageThreeXML extends Stage
             }
             catch ( Exception e )
             {
-                className = popClassName(className);
                 System.out.println("no filter for "+className+" popping...");
+                if ( className.equals("mml.filters.english.harpur.h003.Filter"))
+                    System.out.println("here we go!");
+                className = popClassName(className);
             }
         }
         if ( f != null )

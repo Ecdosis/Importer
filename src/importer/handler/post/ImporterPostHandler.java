@@ -271,7 +271,8 @@ public class ImporterPostHandler extends ImporterHandler
                                 Params.SHORT_VERSION.length()),
                                 item.getString());
                         else if ( fieldName.equals(Params.LC_STYLE)
-                            ||fieldName.equals(Params.STYLE) )
+                            ||fieldName.equals(Params.STYLE)
+                            ||fieldName.equals(Params.CORFORM))
                         {
                             jsonKeys.put(fieldName.toLowerCase(),contents);
                             style = contents;

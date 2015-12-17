@@ -62,4 +62,5 @@ public class Params
     public final static String DICT = "dict";
     public final static String HH_EXCEPTIONS = "hh_exceptions";
     public final static String COLLECTION = "collection";
+    public final static String CORFORM = "corform";
 }
