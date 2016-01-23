@@ -16,7 +16,12 @@
  *  (c) copyright Desmond Schmidt 2015
  */
 package importer.handler.post.annotate;
-
+import calliope.core.constants.JSONKeys;
+import org.json.simple.JSONObject;
+import importer.exception.HTMLException;
+import org.xml.sax.*;
+import org.json.simple.*;
+import importer.handler.post.stages.Splitter;
 /**
  * Represent an annotation in an MVD
  * @author desmond
@@ -24,40 +29,35 @@ package importer.handler.post.annotate;
 public class Annotation {
     int offset;
     int length;
-    String vid;
     String resp;
-    boolean propagateDown;
     boolean link;
-    String body;
+    StringBuilder body;
+    
     /**
      * Create a basic annotation - fill in details later
-     * @param vid the version id starting with "/"
      * @param offset the offset in the underlying text
      * @param resp the person who wrote it (abbreviated)
      * @param link true if this is a link, else it's a plain annotation
-     * @param propagateDown if true apply this annotation to 
      * @param length the length of the annotated text
      */
-    public Annotation( String vid, int offset, String resp, 
+    public Annotation( int offset, String resp, 
         boolean link, boolean propagateDown, int length )
     {
         this.offset = offset;
         this.resp = resp;
-        this.vid = vid;
-        this.propagateDown = propagateDown;
         this.link = link;
         this.length = length;
     }
     /**
-     * Add some text to the annotation body
-     * @param text 
+     * Add some text to the annotation body.
+     * @param text probably HTML
      */
     public void addToBody( String text )
     {
         if ( this.body == null )
-            this.body = text;
+            this.body = new StringBuilder(text);
         else
-            this.body += text;
+            this.body.append( text );
     }
     private void appendInt( StringBuilder sb, String label, int value )
     {
@@ -81,6 +81,32 @@ public class Annotation {
         sb.append(value);  
         sb.append("\"");
     }
+    /**
+     * Crude XML to HTML converter
+     * @param xml the xml to convert
+     * @return HTML
+     */
+    private String toHTML( String xml, JSONObject config ) throws HTMLException
+    {
+        HTMLConverter hc = new HTMLConverter((JSONArray)config.get("patterns"));
+        //xml = xml.replaceAll("&","&amp;");
+        return hc.convert(xml);
+    }
+    /**
+     * Build an annotation for the database
+     * @param config the loaded xml->html configuration from the database
+     * @return a JSON string
+     */
+    public String toJSONString( JSONObject config ) throws HTMLException
+    {
+        JSONObject jObj = new JSONObject();
+        jObj.put(JSONKeys.BODY,toHTML("<note>"+this.body+"</note>",config));
+        jObj.put(JSONKeys.OFFSET, offset );
+        jObj.put( JSONKeys.LEN, length );
+        jObj.put( JSONKeys.AUTHOR, resp );
+        jObj.put(JSONKeys.LINK, link );
+        return jObj.toJSONString();
+    }
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
@@ -89,16 +115,42 @@ public class Annotation {
         sb.append(", ");
         appendInt(sb,"length", this.length );
         sb.append(", ");
-        appendString(sb,"vid", vid );
-        sb.append(", ");
         appendString( sb, "resp", resp );
-        sb.append(", ");
-        appendBoolean( sb, "propagateDown", propagateDown );
         sb.append(", ");
         appendBoolean( sb, "link", link );
         sb.append(", ");
-        appendString(sb,"body", body);
+        appendString(sb,"body", body.toString());
         sb.append(" }");
         return sb.toString();
+    }
+    /**
+     * Add a start tag to the note body
+     * @param localName the name of the element
+     * @param atts its attributes
+     */
+    public void addStartTag( String localName, Attributes atts )
+    {
+        if ( this.body==null )
+            this.body = new StringBuilder();
+        this.body.append("<");
+        this.body.append(localName);
+        for ( int i=0;i<atts.getLength();i++ )
+        {
+            if ( !atts.getLocalName(i).equals(Splitter.DONE) )
+            {
+                this.body.append(" ");
+                this.body.append( atts.getLocalName(i) );
+                this.body.append( "=\"" );
+                this.body.append( atts.getValue(i) );
+                this.body.append( "\"" );
+            }
+        }
+        this.body.append(">");
+    }
+    public void addEndTag( String localName )
+    {
+        this.body.append("</");
+        this.body.append(localName);
+        this.body.append(">");
     }
 }

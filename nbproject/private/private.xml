@@ -10,8 +10,11 @@
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/get/ImporterJSONListHandler.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/exception/ImporterException.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/importer/Doc.java</file>
+            <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/annotate/Element.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/HTMLImportHandler.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/stages/Discriminator.java</file>
+            <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/annotate/HTMLConverter.java</file>
+            <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/annotate/MyErrorHandler.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/EcdosisMVD.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/stages/XMLPrinter.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/get/ImporterTextListHandler.java</file>
@@ -25,10 +28,12 @@
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/stages/Stage3HTML.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/importer/JDocWrapper.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/annotate/SaxParser.java</file>
+            <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/exception/HTMLException.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/exception/PathException.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/constants/Config.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/get/ImporterJSONDictsHandler.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/ByteHolder.java</file>
+            <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/stages/RandomID.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/constants/Globals.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/filters/PlayConfig.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/exception/ConfigException.java</file>
@@ -40,6 +45,8 @@
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/annotate/Annotation.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/stages/Stage.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/JettyServer.java</file>
+            <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/annotate/Attribute.java</file>
+            <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/annotate/HTMLPattern.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/MixedImportHandler.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/stages/MutableInt.java</file>
             <file>file:/home/desmond/NetBeansProjects/Importer/src/importer/handler/post/stages/StageOne.java</file>

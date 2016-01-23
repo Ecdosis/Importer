@@ -20,6 +20,9 @@ import importer.exception.ImporterException;
 import calliope.json.JSONResponse;
 import calliope.AeseStripper;
 import calliope.core.Utils;
+import calliope.core.database.*;
+import calliope.core.constants.Database;
+import calliope.core.exception.DbException;
 import importer.constants.Globals;
 import calliope.core.constants.JSONKeys;
 import java.util.Map;
@@ -33,6 +36,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import java.io.FileOutputStream;
+import java.util.UUID;
 /**
  * Process the XML files for import
  * @author desmond
@@ -49,6 +53,77 @@ public class StageThreeXML extends Stage
     String docid;
     String encoding;
     ArrayList<Annotation> notes;
+    // deafult config really only works with Harpur
+    // so you need a resource at projid+"/html/default"
+    static String DEFAULT_HTML_CONFIG = 
+        "{\"docid\" : \"english/harpur/html/default\", \"patterns\":[{"
+    +"\"xmlTag\":\"addName\",\"htmlTag\":\"span\",\"htmlAttrName\""
+    +":\"class\",\"htmlAttrValue\":\"author\",\"xmlAttrName\":null"
+    +",\"xmlAttrValue\":null},\n{\"xmlTag\":\"author\",\"htmlTag\""
+    +":\"span\",\"htmlAttrName\":\"class\",\"htmlAttrValue\":\"aut"
+    +"hor\",\"xmlAttrName\":null,\"xmlAttrValue\":null},\n{\"xmlTa"
+    +"g\":\"date\",\"htmlTag\":\"span\",\"htmlAttrName\":\"class\""
+    +",\"htmlAttrValue\":\"date\",\"xmlAttrName\":null,\"xmlAttrVa"
+    +"lue\":null},\n{\"xmlTag\":\"emph\",\"htmlTag\":\"span\",\"ht"
+    +"mlAttrName\":\"class\",\"htmlAttrValue\":\"emphasis\",\"xmlA"
+    +"ttrName\":null,\"xmlAttrValue\":null},\n{\"xmlTag\":\"emph\""
+    +",\"htmlTag\":\"span\",\"htmlAttrName\":\"class\",\"htmlAttrV"
+    +"alue\":\"italics\",\"xmlAttrName\":\"rend\",\"xmlAttrValue\""
+    +":\"it\"},\n{\"xmlTag\":\"emph\",\"htmlTag\":\"span\",\"htmlA"
+    +"ttrName\":\"class\",\"htmlAttrValue\":\"underlined\",\"xmlAt"
+    +"trName\":\"rend\",\"xmlAttrValue\":\"ul\"},\n{\"xmlTag\":\"h"
+    +"ead\",\"htmlTag\":\"h3\",\"htmlAttrName\":\"class\",\"htmlAt"
+    +"trValue\":\"head\",\"xmlAttrName\":null,\"xmlAttrValue\":nul"
+    +"l},\n{\"xmlTag\":\"hi\",\"htmlTag\":\"span\",\"htmlAttrName\""
+    +":\"class\",\"htmlAttrValue\":\"italics\",\"xmlAttrName\":nu"
+    +"ll,\"xmlAttrValue\":null},\n{\"xmlTag\":\"hi\",\"htmlTag\":\""
+    +"span\",\"htmlAttrName\":\"class\",\"htmlAttrValue\":\"itali"
+    +"cs\",\"xmlAttrName\":\"rend\",\"xmlAttrValue\":\"it\"},\n{\""
+    +"xmlTag\":\"hi\",\"htmlTag\":\"span\",\"htmlAttrName\":\"clas"
+    +"s\",\"htmlAttrValue\":\"underlined\",\"xmlAttrName\":\"rend\""
+    +",\"xmlAttrValue\":\"ul\"},\n{\"xmlTag\":\"hi\",\"htmlTag\":"
+    +"\"span\",\"htmlAttrName\":\"class\",\"htmlAttrValue\":\"smal"
+    +"lcaps\",\"xmlAttrName\":\"rend\",\"xmlAttrValue\":\"sc\"},\n"
+    +"{\"xmlTag\":\"hi\",\"htmlTag\":\"span\",\"htmlAttrName\":\"c"
+    +"lass\",\"htmlAttrValue\":\"double-underlined\",\"xmlAttrName"
+    +"\":\"rend\",\"xmlAttrValue\":\"dul\"},\n{\"xmlTag\":\"hi\",\""
+    +"htmlTag\":\"span\",\"htmlAttrName\":\"class\",\"htmlAttrVal"
+    +"ue\":\"superscript\",\"xmlAttrName\":\"rend\",\"xmlAttrValue"
+    +"\":\"ss\"},\n{\"xmlTag\":\"l\",\"htmlTag\":\"span\",\"htmlAt"
+    +"trName\":\"class\",\"htmlAttrValue\":\"line\",\"xmlAttrName\""
+    +":null,\"xmlAttrValue\":null},\n{\"xmlTag\":\"l\",\"htmlTag\""
+    +":\"span\",\"htmlAttrName\":\"class\",\"htmlAttrValue\":\"li"
+    +"ne-indent1\",\"xmlAttrName\":\"rend\",\"xmlAttrValue\":\"ind"
+    +"ent1\"},\n{\"xmlTag\":\"l\",\"htmlTag\":\"span\",\"htmlAttrN"
+    +"ame\":\"class\",\"htmlAttrValue\":\"line-indent2\",\"xmlAttr"
+    +"Name\":\"rend\",\"xmlAttrValue\":\"indent2\"},\n{\"xmlTag\":"
+    +"\"l\",\"htmlTag\":\"span\",\"htmlAttrName\":\"class\",\"html"
+    +"AttrValue\":\"line-indent3\",\"xmlAttrName\":\"rend\",\"xmlA"
+    +"ttrValue\":\"indent3\"},\n{\"xmlTag\":\"l\",\"htmlTag\":\"sp"
+    +"an\",\"htmlAttrName\":\"class\",\"htmlAttrValue\":\"line-ind"
+    +"ent4\",\"xmlAttrName\":\"rend\",\"xmlAttrValue\":\"indent4\""
+    +"},\n{\"xmlTag\":\"l\",\"htmlTag\":\"span\",\"htmlAttrName\":"
+    +"\"class\",\"htmlAttrValue\":\"line-indent5\",\"xmlAttrName\""
+    +":\"rend\",\"xmlAttrValue\":\"indent5\"},\n{\"xmlTag\":\"lb\""
+    +",\"htmlTag\":\"br\",\"htmlAttrName\":null,\"htmlAttrValue\":"
+    +"null,\"xmlAttrName\":null,\"xmlAttrValue\":null},\n{\"xmlTag"
+    +"\":\"lg\",\"htmlTag\":\"div\",\"htmlAttrName\":\"class\",\"h"
+    +"tmlAttrValue\":\"stanza\",\"xmlAttrName\":null,\"xmlAttrValu"
+    +"e\":null},\n{\"xmlTag\":\"metamark\",\"htmlTag\":\"span\",\""
+    +"htmlAttrName\":\"class\",\"htmlAttrValue\":\"metamark\",\"xm"
+    +"lAttrName\":null,\"xmlAttrValue\":null},\n{\"xmlTag\":\"p\","
+    +"\"htmlTag\":\"p\",\"htmlAttrName\":null,\"htmlAttrValue\":nu"
+    +"ll,\"xmlAttrName\":null,\"xmlAttrValue\":null},\n{\"xmlTag\""
+    +":\"pb\",\"htmlTag\":\"a\",\"htmlAttrName\":\"href\",\"htmlAt"
+    +"trValue\":null,\"xmlAttrName\":\"facs\",\"xmlAttrValue\":nul"
+    +"l},\n{\"xmlTag\":\"q\",\"htmlTag\":\"blockquote\",\"htmlAttr"
+    +"Name\":null,\"htmlAttrValue\":null,\"xmlAttrName\":null,\"xm"
+    +"lAttrValue\":null},\n{\"xmlTag\":\"ref\",\"htmlTag\":\"a\",\""
+    +"htmlAttrName\":\"href\",\"htmlAttrValue\":null,\"xmlAttrNam"
+    +"e\":\"target\",\"xmlAttrValue\":null},\n{\"xmlTag\":\"unclea"
+    +"r\",\"htmlTag\":\"span\",\"htmlAttrName\":\"class\",\"htmlAt"
+    +"trValue\":\"unclear\",\"xmlAttrName\":null,\"xmlAttrValue\":"
+    +"null}]}\n";
     
     public StageThreeXML()
     {
@@ -253,8 +328,6 @@ public class StageThreeXML extends Stage
             catch ( Exception e )
             {
                 System.out.println("no filter for "+className+" popping...");
-                if ( className.equals("mml.filters.english.harpur.h003.Filter"))
-                    System.out.println("here we go!");
                 className = popClassName(className);
             }
         }
@@ -300,6 +373,40 @@ public class StageThreeXML extends Stage
         {
         }
     }
+    
+    /**
+     * Get the xml to HTML conversion file from the db
+     * @param conn the database connection
+     * @return the configuration string
+     */
+    String getHtmlConfig( Connection conn )
+    {
+        try
+        {
+            String[] parts = docid.split("/");
+            String composite = docid+"/html/default";
+            // try two-part docid
+            if ( parts.length > 1 )
+            {
+                composite = parts[0]+"/"+parts[1]+"/html/default";
+                String json = (String)conn.getFromDb(Database.CONFIG,composite);
+                if ( json != null )
+                    return json;
+            }
+            if ( parts.length > 2 )
+            {
+                composite = parts[0]+"/"+parts[1]+"/"+parts[2]+"/html/default";
+                String json = (String)conn.getFromDb(Database.CONFIG,composite);
+                if ( json != null )
+                    return json;
+            }
+            return DEFAULT_HTML_CONFIG;
+        }
+        catch ( DbException dbe )
+        {
+            return DEFAULT_HTML_CONFIG;
+        }
+    }
     /**
      * Process the files
      * @param cortex the cortext MVD to accumulate files into
@@ -342,13 +449,43 @@ public class StageThreeXML extends Stage
                         // extract the notes from the xml
                         String vid = extractVersionName(files.get(i).name);
                         NoteStripper ns = new NoteStripper();
-                        // just remove all notes for now
-                        xml = ns.strip( xml ); 
+                        // strip out the bona fide notes
+                        xml = ns.strip( xml, docid, vid+"/"+key ); 
+                        ArrayList notes = ns.getNotes();
                         int res = stripper.strip( xml, stripConfig, 
                             style, dict, hhExcepts, 
                             Utils.isHtml(xml), text, markup );
                         if ( res == 1 )
                         {
+                            // save notes in database if any
+                            if ( notes.size() > 0 )
+                            {
+                                Connection conn = Connector.getConnection();
+                                if ( !vid.startsWith("/") )
+                                    vid = "/"+vid;
+                                conn.removeFromDbByExpr( Database.ANNOTATIONS, 
+                                    JSONKeys.DOCID, docid+vid+"/.*");
+                                RandomID rid = new RandomID();
+                                String config = getHtmlConfig(conn);
+                                JSONObject jObj = (JSONObject)JSONValue.parse(config);
+                                if ( jObj != null )
+                                {
+                                    for ( int j=0;j<notes.size();j++ )
+                                    {
+                                        Annotation ann = (Annotation)notes.get(j);
+                                        String json = ann.toJSONString(jObj);
+                                        String annid = docid;
+                                        if ( vid.startsWith("/") )
+                                            annid += vid;
+                                        else
+                                            annid += "/"+vid;
+                                        annid += "/"+rid.newKey();
+                                        conn.putToDb(Database.ANNOTATIONS,annid,json);
+                                    }
+                                }
+                                else
+                                    System.out.println("Failed to load xml->html config");
+                            }
                             if ( map.size()>1 )
                                 vid += "/"+key;
                             //char[] chars = text.getBody().toCharArray();

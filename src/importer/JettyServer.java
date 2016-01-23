@@ -62,6 +62,7 @@ public class JettyServer extends AbstractHandler
     {
         response.setStatus(HttpServletResponse.SC_OK);
         String method = request.getMethod();
+        System.out.println("Entered");
         baseRequest.setHandled( true );
         try
         {

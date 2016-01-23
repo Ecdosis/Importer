@@ -46,7 +46,7 @@ import importer.exception.ImporterException;
 public class Splitter 
 {
     static String VERSIONS = "_versions";
-    static String DONE = "_done";
+    public static String DONE = "_done";
     static String DEFAULT = "_default";
     static String FINAL = "_final";
     static String BASE = "base";
@@ -71,9 +71,14 @@ public class Splitter
         if ( discriminator.isSibling(elem) )
         {
             String eName = elem.getNodeName();
-            pos.inc(eName,elem);
-            String pName = pos.getName(eName);
-            discriminator.addVersion( elem, pName );
+            Element next = discriminator.nextTrueSibling(elem);
+            if ( next != null )
+            {
+                pos.inc(eName,elem);
+                String pName = pos.getName(eName);
+                discriminator.addVersion( elem, pName );
+            }
+            // else there is no corresponding sibling - ignore it
         }
         // descend depth-first
         Element child = Discriminator.firstChild( elem );
@@ -155,6 +160,7 @@ public class Splitter
         Node parent = elem.getParentNode();
         if ( parent != null && parent.getNodeType()==Node.ELEMENT_NODE )
         {
+            System.out.println(elem.getNodeName());
             String vers = ((Element)parent).getAttribute(VERSIONS);
             if ( vers !=null&&vers.length()>0 )
             {

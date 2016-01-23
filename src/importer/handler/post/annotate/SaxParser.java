@@ -16,15 +16,14 @@
  *  (c) copyright Desmond Schmidt 2015
  */
 package importer.handler.post.annotate;
-import java.io.ByteArrayInputStream;
+import java.io.CharArrayReader;
 import java.util.ArrayList;
 import javax.xml.parsers.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
-import java.io.PrintStream;
 
 /**
- *
+ * SAX parser for main body of xml. Extracts notes.
  * @author desmond
  */
 public class SaxParser extends DefaultHandler
@@ -38,7 +37,7 @@ public class SaxParser extends DefaultHandler
     StringBuilder body;
     /** current position in file */
     private int pos;
-    SaxParser( String vid ) throws Exception
+    SaxParser( String docid, String vid, ArrayList<Annotation> notes ) throws Exception
     {
         try
         {
@@ -46,7 +45,8 @@ public class SaxParser extends DefaultHandler
             //spf.;
             spf.setNamespaceAware(true);
             this.vid = vid;
-            this.notes = new ArrayList<Annotation>();
+            this.docid = docid;
+            this.notes = notes;
             this.body = new StringBuilder();
             parser = spf.newSAXParser();
             xmlReader = parser.getXMLReader();
@@ -58,29 +58,28 @@ public class SaxParser extends DefaultHandler
             throw new Exception(e);
         }
     }
-    public ArrayList<Annotation> getNotes()
-    {
-        return notes;
-    }
     /**
      * Digest a single XML file
      * @param data the data read from the XML file
      */
-    void digest( byte[] data ) throws Exception
+    void digest( char[] data ) throws Exception
     {
-        ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        InputSource input = new InputSource(bis);
+        CharArrayReader car = new CharArrayReader(data);
+        InputSource input = new InputSource(car);
         xmlReader.parse(input);     
     }
     public void startElement( String namespaceURI, String localName,
         String qName, Attributes atts ) throws SAXException 
     {
-        if ( localName.equals("note") )
+        if ( note != null )
+        {
+            note.addStartTag(localName,atts);
+        }
+        else if ( localName.equals("note") )
         {
             // String vid, String docid, int offset, String resp, 
             // boolean link, boolean propagateDown
-            note = new Annotation( this.vid, pos, 
-                atts.getValue("resp"), false, true, 0 );
+            note = new Annotation( pos, atts.getValue("resp"), false, true, 0 );
         }
         else
         {
@@ -106,34 +105,41 @@ public class SaxParser extends DefaultHandler
     {
         char[] ch = src.toCharArray();
         StringBuilder sb = new StringBuilder();
-        int state = 0;
+        //int state = 0;
         for ( int i=0;i<ch.length;i++ )
         {
-            switch ( state )
-            {
-                case 0: // looking for " or '\\'
-                    if ( ch[i] == '"' )
-                        sb.append("\\\"");
-                    else if ( ch[i]=='\\' )
-                        state = 1;
-                    else 
-                        sb.append(ch[i]);
-                    break;
-                case 1: // seen '\\'
-                    if ( ch[i] == '"' )
-                        sb.append("\\\"");
-                    else
-                    {
-                        sb.append("\\");
-                        sb.append(ch[i]);
-                    }
-                    state = 0;
-                    break;
-            }
+            if ( ch[i]=='&' )
+                sb.append("&amp;");
+            else
+                sb.append(ch[i]);
         }
+//            switch ( state )
+//            {
+//                case 0: // looking for " or '\\'
+//                    if ( ch[i]=='&' )
+//                        sb.append("&amp;");
+//                    else if ( ch[i] == '"' )
+//                        sb.append("\\\"");
+//                    else if ( ch[i]=='\\' )
+//                        state = 1;
+//                    else 
+//                        sb.append(ch[i]);
+//                    break;
+//                case 1: // seen '\\'
+//                    if ( ch[i] == '"' )
+//                        sb.append("\\\"");
+//                    else
+//                    {
+//                        sb.append("\\");
+//                        sb.append(ch[i]);
+//                    }
+//                    state = 0;
+//                    break;
+//            }
+//        }
         // if last character was a backslash...
-        if ( state == 1 )
-            sb.append("\\");
+//        if ( state == 1 )
+//            sb.append("\\");
         return sb.toString();
     }
     public void characters(char[] ch, int start, int length)
@@ -159,10 +165,17 @@ public class SaxParser extends DefaultHandler
      */
     public void endElement(String uri, String localName, String qName)
     {
-        if ( localName.equals("note") && note != null )
+        if ( note != null )
         {
-            notes.add( note );
-            note = null;
+            if ( localName.equals("note") )
+            {
+                notes.add( note );
+                note = null;
+            }
+            else
+            {
+                note.addEndTag(localName);
+            }
         }
         else
         {
@@ -187,38 +200,5 @@ public class SaxParser extends DefaultHandler
         }
         sb.append(" ]");
         return sb.toString();
-    }
-    private static class MyErrorHandler implements ErrorHandler 
-    {
-        private PrintStream out;
-
-        MyErrorHandler(PrintStream out) 
-        {
-            this.out = out;
-        }
-
-        private String getParseExceptionInfo(SAXParseException spe) {
-            String systemId = spe.getSystemId();
-
-            if (systemId == null) {
-                systemId = "null";
-            }
-
-            String info = "URI=" + systemId + " Line=" 
-                + spe.getLineNumber() + ": " + spe.getMessage();
-
-            return info;
-        }
-        public void warning(SAXParseException spe) throws SAXException {
-            out.println("Warning: " + getParseExceptionInfo(spe));
-        }
-        public void error(SAXParseException spe) throws SAXException {
-            String message = "Error: " + getParseExceptionInfo(spe);
-            throw new SAXException(message);
-        }
-        public void fatalError(SAXParseException spe) throws SAXException {
-            String message = "Fatal Error: " + getParseExceptionInfo(spe);
-            throw new SAXException(message);
-        }
     }
 }

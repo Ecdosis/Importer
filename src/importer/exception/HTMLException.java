@@ -15,25 +15,30 @@
  *  along with Importer.  If not, see <http://www.gnu.org/licenses/>.
  *  (c) copyright Desmond Schmidt 2015
  */
-package importer.handler.post.annotate;
-import java.util.ArrayList;
+
+package importer.exception;
+import calliope.core.exception.CalliopeException;
 
 /**
- * Strip notes from a TEI-XML file 
+ * Specific exception classes for various parts of Importer
  * @author desmond
  */
-public class NoteStripper 
+public class HTMLException extends CalliopeException
 {
-    ArrayList<Annotation> notes;
-    public String strip( String xml, String docid, String vid ) throws Exception
+    /**
+     * Create a general MMLException from scratch
+     * @param message the message it is to bear
+     */
+    public HTMLException( String message )
     {
-        notes = new ArrayList<Annotation>();
-        SaxParser sp = new SaxParser( docid, vid, notes );
-        sp.digest( xml.toCharArray() );
-        return sp.getBody();
+        super( message );
     }
-    public ArrayList<Annotation> getNotes()
+    /**
+     * Wrapper for another exception
+     * @param e the other exception
+     */
+    public HTMLException( Exception e )
     {
-        return notes;
+        super( e );
     }
 }
