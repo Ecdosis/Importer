@@ -28,6 +28,7 @@ public class ImporterJSONDictsHandler extends ImporterGetHandler
             String[] dicts = aes.listDicts();
             for ( int i=0;i<dicts.length;i++ )
             {
+                System.out.println("found:"+dicts[i]);
                 String[] parts = dicts[i].split("\t");
                 if ( parts.length==2 )
                 {

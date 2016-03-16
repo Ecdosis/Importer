@@ -48,7 +48,7 @@ public class UploadHandler extends ImporterPostHandler
                 {
                     ImageFile iFile = images.get(i);
                     Corpix.addImage( ImporterWebApp.webRoot, docid, 
-                        iFile.getType(), iFile.getData() );
+                        iFile.getName(), null, iFile.getType(), iFile.getData() );
                 }
                 if ( Connector.getConnection()== null)
                     System.out.println("connection was null");
